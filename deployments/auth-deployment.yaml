@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-app-deployment
+  labels:
+    name: auth-app-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: auth-app
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        name: auth-app
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      containers:
+        - image: mainul35/drmarkdown:auth
+          name: auth-app
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: prod
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 9999
+            initialDelaySeconds: 30
+            periodSeconds: 40
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 9999
+            initialDelaySeconds: 30
+            periodSeconds: 40
+      restartPolicy: Always
